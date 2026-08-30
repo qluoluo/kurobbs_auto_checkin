@@ -39,3 +39,26 @@ jobs:
           SERVER3_SEND_KEY: ${{ secrets.SERVER3_SEND_KEY }} # ServerChan3
         run: |
           python auto_checkin.py
+
+      # 5. 签到失败时发送邮件通知(QQ邮箱 SMTP)
+      - name: Send failure mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.qq.com
+          server_port: 465
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          secure: true
+          subject: 库街区自动签到失败 ❌
+          to: ${{ secrets.MAIL_TO }}
+          from: 库街区签到 <${{ secrets.SMTP_USER }}>
+          priority: high
+          body: |
+            库街区自动签到任务失败了，请尽快处理！
+
+            常见原因:
+            1. TOKEN 过期: 到仓库 Settings → Secrets and variables → Actions 更新 TOKEN
+            2. 接口变动或风控: 查看运行日志确认
+
+            运行日志: https://github.com/qluoluo/kurobbs_auto_checkin/actions
