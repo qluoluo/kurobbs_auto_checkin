@@ -103,7 +103,17 @@ class KurobbsClient:
         role_list = user_game_list.get("defaultRoleList") or []
         if not role_list:
             raise KurobbsClientException("No default role found for the user.")
-        role_info = role_list[0]
+
+        # 优先选择鸣潮角色(gameId=3)签到, 没有则退回默认角色(role_list[0])
+        # 原因: 默认角色可能是战双(gameId=2), 导致鸣潮的签到奖励发到战双角色上
+        role_info = next((r for r in role_list if str(r.get("gameId")) == "3"), role_list[0])
+        logger.info(
+            "签到目标 -> gameId={} (2=战双, 3=鸣潮), serverId={}, roleId={}, roleName={}",
+            role_info.get("gameId"),
+            role_info.get("serverId"),
+            role_info.get("roleId"),
+            role_info.get("roleName"),
+        )
 
         data = {
             "gameId": role_info.get("gameId", 2),
